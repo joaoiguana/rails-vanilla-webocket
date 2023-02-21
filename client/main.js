@@ -1,23 +1,33 @@
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import { setupCounter } from './counter.js'
+function createSocket() {
+  // Action Cable has a websocket mounted at
+  // ws://localhost:3000/cable
+  const socket_url = 'ws://localhost:3000/cable';
+  const socket = new WebSocket(socket_url);
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
+  // When the socket is opened, we can send data to the server
+  socket.onopen = function(event) {
+    console.log("Connected to the server");
+    const msg = {
+      command: 'subscribe',
+      identifier: JSON.stringify({
+        id: 1,
+        channel: 'AlertsChannel'
+      })
+    };
+    socket.send(JSON.stringify(msg));
+  }
 
-setupCounter(document.querySelector('#counter'))
+  socket.onmessage = function(event) {
+    console.log("Recieved data from server", event.data);
+  }
+
+  socket.onclose = function(event) {
+    console.log("Disconnected from server");
+  }
+
+  socket.onerror = function(error) {
+    console.log("Websocket error observed: ", error);
+  }
+}
+
+createSocket();
